@@ -8,7 +8,7 @@ Note that JxBrowser is a commercial product, not included by default in this bea
 
 # Bean Usage
 
-The bean release is a zip file containing the actual bean (jar file). This jar, together with all JxBrowser jars (license.jar, jxbrowser.jar and os specific jars), must be placed in application_server/beans folder of your install (cannot use subdirectories). Servoy  will then automatically use these jars both in developer and Smart Client. Note that for Smart Client, the jars must be signed with same certificate. 
+The bean release is a zip file containing the actual bean (jar file). This jar, together with all JxBrowser jars (license.jar, jxbrowser.jar and os specific jars), must be placed in application_server/beans folder of your install (cannot use subdirectories). Servoy  will then automatically use these jars both in developer and Smart Client. Note that for Smart Client, the jars must all be signed if you don't use the bootstrapper. The bean jar itself is signed by servoy. 
 
 # Bean Api
 
