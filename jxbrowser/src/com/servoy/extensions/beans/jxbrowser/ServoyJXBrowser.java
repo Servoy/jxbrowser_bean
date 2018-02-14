@@ -85,6 +85,7 @@ public class ServoyJXBrowser extends JPanel implements IComponent, IServoyAwareV
 		}
 		else if (view != null)
 		{
+			if (view.getBrowser() != null) view.getBrowser().dispose();
 			remove(view);
 			view = null;
 		}
