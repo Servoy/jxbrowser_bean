@@ -25,6 +25,7 @@ import com.servoy.j2db.dataprocessing.IRecord;
 import com.servoy.j2db.dataui.IServoyAwareVisibilityBean;
 import com.servoy.j2db.plugins.IClientPluginAccess;
 import com.servoy.j2db.ui.IComponent;
+import com.servoy.j2db.util.IDestroyable;
 import com.teamdev.jxbrowser.chromium.Browser;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 
@@ -32,7 +33,7 @@ import com.teamdev.jxbrowser.chromium.swing.BrowserView;
  * @author lvostinar
  *
  */
-public class ServoyJXBrowser extends JPanel implements IComponent, IServoyAwareVisibilityBean, IJXBrowserScriptMethods
+public class ServoyJXBrowser extends JPanel implements IComponent, IServoyAwareVisibilityBean, IJXBrowserScriptMethods, IDestroyable
 {
 	private BrowserView view;
 
@@ -127,5 +128,14 @@ public class ServoyJXBrowser extends JPanel implements IComponent, IServoyAwareV
 	public boolean isReadOnly()
 	{
 		return true;
+	}
+	
+	public void destroy()
+	{
+		if (view != null)
+		{
+			if (view.getBrowser() != null) view.getBrowser().dispose();
+			view = null;
+		}
 	}
 }
