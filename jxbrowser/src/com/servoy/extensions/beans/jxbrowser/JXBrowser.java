@@ -64,7 +64,7 @@ public class JXBrowser implements IServoyBeanFactory
 	{
 		try
 		{
-			Class.forName("com.teamdev.jxbrowser.chromium.Browser", false, classLoader); //$NON-NLS-1$
+			Class.forName("com.teamdev.jxbrowser.browser.Browser", false, classLoader); //$NON-NLS-1$
 			return true;
 		}
 		catch (Exception e)

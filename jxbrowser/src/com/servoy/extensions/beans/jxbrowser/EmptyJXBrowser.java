@@ -31,7 +31,7 @@ public class EmptyJXBrowser extends JLabel implements IComponent, IJXBrowserScri
 	public EmptyJXBrowser()
 	{
 		super(
-			"Cannot initialize JXBrowser bean because JxBrowser library was not found. JxBrowser jars must be placed in beans folder of the application server.");
+			"Cannot initialize JXBrowser bean because JxBrowser library was not found or has errors. JxBrowser jars must be placed in beans folder of the application server.");
 	}
 
 	@Override
