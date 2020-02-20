@@ -18,17 +18,29 @@
 package com.servoy.extensions.beans.jxbrowser;
 
 import java.awt.BorderLayout;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 
 import javax.swing.JPanel;
 
 import com.servoy.j2db.dataprocessing.IRecord;
 import com.servoy.j2db.dataui.IServoyAwareVisibilityBean;
 import com.servoy.j2db.plugins.IClientPluginAccess;
+import com.servoy.j2db.scripting.JSMap;
 import com.servoy.j2db.ui.IComponent;
+import com.servoy.j2db.util.Debug;
 import com.servoy.j2db.util.IDestroyable;
+import com.teamdev.jxbrowser.browser.callback.InjectJsCallback;
+import com.teamdev.jxbrowser.browser.event.ConsoleMessageReceived;
 import com.teamdev.jxbrowser.engine.Engine;
 import com.teamdev.jxbrowser.engine.EngineOptions;
 import com.teamdev.jxbrowser.engine.RenderingMode;
+import com.teamdev.jxbrowser.js.ConsoleMessage;
+import com.teamdev.jxbrowser.js.ConsoleMessageLevel;
+import com.teamdev.jxbrowser.js.JsObject;
+import com.teamdev.jxbrowser.navigation.event.NavigationRedirected;
+import com.teamdev.jxbrowser.navigation.event.NavigationStarted;
 import com.teamdev.jxbrowser.view.swing.BrowserView;
 
 /**
@@ -39,10 +51,12 @@ public class ServoyJXBrowser extends JPanel implements IComponent, IServoyAwareV
 {
 	private BrowserView view;
 	private Engine engine;
+	private ServoyMethodCaller caller;
 	
-	public ServoyJXBrowser()
+	public ServoyJXBrowser(ServoyMethodCaller caller)
 	{
 		super();
+		this.caller = caller;
 		setLayout(new BorderLayout());
 	}
 
@@ -105,6 +119,53 @@ public class ServoyJXBrowser extends JPanel implements IComponent, IServoyAwareV
 			engine = Engine.newInstance(
 	                EngineOptions.newBuilder(RenderingMode.HARDWARE_ACCELERATED).build());
 			view = BrowserView.newInstance(engine.newBrowser());
+			view.getBrowser().set(InjectJsCallback.class, params -> {
+			     JsObject window = params.frame().executeJavaScript("window");
+			     if (window != null) {
+			         window.putProperty("servoy", caller);
+			     }
+			     return InjectJsCallback.Response.proceed();
+			 });
+			view.getBrowser().on(ConsoleMessageReceived.class, event -> {
+			    ConsoleMessage consoleMessage = event.consoleMessage();
+			    if (ConsoleMessageLevel.LEVEL_ERROR_VALUE == consoleMessage.level().getNumber())
+			    {
+			    	Debug.error("Error from JXBrowser console: " + consoleMessage.message());
+			    }
+			    else if (ConsoleMessageLevel.WARNING_VALUE== consoleMessage.level().getNumber()) {
+			    	Debug.warn("Warning from JXBrowser console: " + consoleMessage.message());
+			    }
+			});
+			view.getBrowser().navigation().on(NavigationStarted.class, event -> {
+			    String url = event.url();
+			    if (url.startsWith("callback://"))
+			    {
+			    	event.navigation().stop();
+			    	String methodName = null;
+			    	Map<String,String> argument = null;
+			    	int queryStart = url.indexOf("?");
+			    	if (queryStart >= 0)
+			    	{
+			    		argument = new JSMap<String,String>();
+			    		methodName = url.substring(11,queryStart);
+			    		String queryString = url.substring(queryStart +1);
+			    		String[] params = queryString.split("&");
+			    		for (String param : params)
+			    		{
+			    			String[] splitParam = param.split("=");
+			    			if (splitParam.length == 2)
+			    			{
+			    				argument.put(splitParam[0], splitParam[1]);
+			    			}	
+			    		}	
+			    	}
+			    	else
+			    	{
+			    		methodName = url.substring(11);
+			    	}	
+			    	caller.executeMethodInternal(methodName, argument);
+			    }
+			});
 		}
 	}
 

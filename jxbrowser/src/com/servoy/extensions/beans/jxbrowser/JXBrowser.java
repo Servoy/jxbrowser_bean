@@ -45,7 +45,7 @@ public class JXBrowser implements IServoyBeanFactory
 		{
 			try
 			{
-				return new ServoyJXBrowser();
+				return new ServoyJXBrowser(new ServoyMethodCaller(access));
 			}
 			catch (Exception ex)
 			{
